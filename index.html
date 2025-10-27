@@ -196,128 +196,134 @@ async function processImage(file) {
 // Função principal de geração do PDF
 async function gerarPDF() {
     try {
-        // Validação dos campos obrigatórios
-        const campos = {
-            nomeTecnico: document.getElementById('nomeTecnico').value.trim(),
-            equipamento: document.getElementById('equipamento').value.trim(),
-            descricao: document.getElementById('descricao').value.trim()
-        };
-
-        if (!campos.nomeTecnico || !campos.equipamento || !campos.descricao) {
+        // Validação
+        const campos = ['nomeTecnico', 'equipamento', 'descricao'];
+        if (campos.some(id => !document.getElementById(id).value.trim())) {
             alert('Preencha todos os campos obrigatórios: Nome, Equipamento e Descrição');
             return;
         }
 
-        // Criação do documento
+        // Configuração inicial do PDF
         const doc = new jspdf.jsPDF();
         const margin = 15;
-        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
         let y = margin;
 
-        // Adiciona logo
+        // Cabeçalho preto para logo
+        doc.setFillColor(14, 26, 31); // Cor de fundo escura
+        doc.rect(0, 0, pageWidth, 70, 'F');
+
+        // Logo centralizada
         try {
             const logo = await preloadLogo();
-            const logoW = 40;
+            const logoW = 36;
             doc.addImage(logo, 'PNG', (pageWidth - logoW)/2, y, logoW, logoW);
             y += logoW + 10;
         } catch(e) {
-            console.warn('Erro ao carregar logo:', e);
-            y += 10;
+            console.warn('Erro logo:', e);
+            y += 45;
         }
 
-        // Cabeçalho estilizado
-        doc.setFillColor(14, 26, 31); // --fundo-escuro
-        doc.rect(0, 0, pageWidth, 20, 'F');
-        
         // Título
-        doc.setTextColor(0, 255, 102); // --verde-zecure
+        doc.setTextColor(0, 255, 102); // Verde Zecure
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.text('RELATÓRIO DE INSPEÇÃO', pageWidth/2, y, {align: 'center'});
-        y += 15;
-
-        // Reset cor do texto
-        doc.setTextColor(0);
+        y += 20;
 
         // Box de informações
-        doc.setFillColor(27, 42, 49); // --cinza-card
+        doc.setFillColor(27, 42, 49); // Cinza card
         doc.roundedRect(margin, y, pageWidth - 2*margin, 50, 3, 3, 'F');
-        
+
         // Informações básicas
-        doc.setTextColor(255); // texto branco
+        doc.setTextColor(255); // Texto branco
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         
         const infoY = y + 10;
-        doc.text(`Técnico: ${campos.nomeTecnico}`, margin + 5, infoY);
-        doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, margin + 5, infoY + 10);
-        doc.text(`Equipamento: ${campos.equipamento}`, margin + 5, infoY + 20);
-        doc.text(`Tipo: ${document.getElementById('tipo').value}`, margin + 5, infoY + 30);
-        
-        // Adiciona localização
-        if (userLocation) {
-            doc.text(`Localização: ${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}`, 
-                margin + 5, infoY + 40);
-        }
-        
+        const data = {
+            tecnico: document.getElementById('nomeTecnico').value,
+            equipamento: document.getElementById('equipamento').value,
+            tipo: document.getElementById('tipo').value,
+            data: new Date().toLocaleString('pt-BR'),
+            local: userLocation ? 
+                `${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}` : 
+                'Não disponível'
+        };
+
+        doc.text(`Técnico: ${data.tecnico}`, margin + 5, infoY);
+        doc.text(`Data: ${data.data}`, margin + 5, infoY + 10);
+        doc.text(`Equipamento: ${data.equipamento}`, margin + 5, infoY + 20);
+        doc.text(`Tipo: ${data.tipo}`, margin + 5, infoY + 30);
+        doc.text(`Local: ${data.local}`, margin + 5, infoY + 40);
         y += 60;
 
-        // Reset cor do texto
-        doc.setTextColor(0);
-
         // Descrição
-        doc.setFillColor(0, 255, 102, 0.1); // Verde semi-transparente
+        doc.setTextColor(0); // Texto preto
+        doc.setFillColor(0, 255, 102, 0.1);
         doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
         doc.text('DESCRIÇÃO DO SERVIÇO', margin + 5, y + 7);
         y += 15;
         doc.setFont('helvetica', 'normal');
-        const descLines = doc.splitTextToSize(campos.descricao, pageWidth - 2*margin);
+        const descLines = doc.splitTextToSize(
+            document.getElementById('descricao').value, 
+            pageWidth - 2*margin
+        );
         doc.text(descLines, margin, y);
         y += descLines.length * 6 + 10;
 
-        // Função auxiliar para adicionar imagens
+        // Função para adicionar imagens
         async function addImages(files, title) {
             if (!files.length) return;
             
+            // Título da seção
             doc.setFillColor(0, 255, 102, 0.1);
             doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
             doc.setFont('helvetica', 'bold');
             doc.text(title, margin + 5, y + 7);
             y += 15;
 
-            const imagePromises = Array.from(files)
-                .slice(0, 4)
-                .map(async (file, index) => {
-                    try {
-                        const dataUrl = await processImage(file);
-                        if (!dataUrl) return;
+            // Grid de imagens
+            const imageGrid = Array.from(files).slice(0, 4);
+            for (let i = 0; i < imageGrid.length; i++) {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                
+                if (y + (row * 70) + 60 > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
 
-                        const x = margin + (index % 2) * 90;
-                        const imgY = y + Math.floor(index / 2) * 70;
+                const x = margin + (col * 90);
+                const imgY = y + (row * 70);
 
-                        // Borda verde nas imagens
+                try {
+                    const dataUrl = await processImage(imageGrid[i]);
+                    if (dataUrl) {
+                        // Borda verde
                         doc.setDrawColor(0, 255, 102);
                         doc.setLineWidth(0.5);
                         doc.rect(x-1, imgY-1, 87, 62);
-
+                        
+                        // Imagem
                         doc.addImage(dataUrl, 'JPEG', x, imgY, 85, 60);
-                    } catch (e) {
-                        console.warn('Erro ao processar imagem:', e);
                     }
-                });
-
-            await Promise.all(imagePromises);
-            y += Math.ceil(files.length / 2) * 70 + 10;
+                } catch(e) {
+                    console.warn('Erro imagem:', e);
+                }
+            }
+            y += Math.ceil(imageGrid.length / 2) * 70 + 10;
         }
 
+        // Adiciona as fotos
         await addImages(document.getElementById('fotoAntes').files, 'FOTOS - ANTES');
         await addImages(document.getElementById('fotoDepois').files, 'FOTOS - DEPOIS');
 
         // Observações
-        const observacoes = document.getElementById('compra').value.trim();
-        if (observacoes) {
+        const obs = document.getElementById('compra').value.trim();
+        if (obs) {
             if (y > pageHeight - 60) {
                 doc.addPage();
                 y = margin;
@@ -328,7 +334,7 @@ async function gerarPDF() {
             doc.text('OBSERVAÇÕES:', margin + 5, y + 7);
             y += 15;
             doc.setFont('helvetica', 'normal');
-            const obsLines = doc.splitTextToSize(observacoes, pageWidth - 2*margin);
+            const obsLines = doc.splitTextToSize(obs, pageWidth - 2*margin);
             doc.text(obsLines, margin, y);
         }
 
@@ -355,11 +361,10 @@ async function gerarPDF() {
         }
 
         // Salva o PDF
-        const filename = `Inspecao_${campos.nomeTecnico.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
-        doc.save(filename);
+        doc.save(`Inspecao_${data.tecnico.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
 
     } catch (err) {
-        console.error('Erro ao gerar PDF:', err);
+        console.error('Erro:', err);
         alert('Erro ao gerar PDF. Por favor, tente novamente.');
     }
 }
@@ -378,3 +383,4 @@ function abrirMapa(){ if(userLocation) window.open(`https://www.google.com/maps?
 
 </body>
 </html>
+
