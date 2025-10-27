@@ -210,38 +210,38 @@ async function gerarPDF() {
         const pageHeight = doc.internal.pageSize.height;
         let y = margin;
 
-        // Cabeçalho preto para logo
-        doc.setFillColor(14, 26, 31); // Cor de fundo escura
-        doc.rect(0, 0, pageWidth, 70, 'F');
+        // Constantes de cores
+        const VERDE_ZECURE = [0, 255, 102];
+        const FUNDO_ESCURO = [14, 26, 31];
+        const CINZA_CARD = [27, 42, 49];
 
-        // Logo centralizada
+        // Cabeçalho preto para logo
+        doc.setFillColor(...FUNDO_ESCURO);
+        doc.rect(0, 0, pageWidth, 60, 'F');
+
+        // Logo centralizada em fundo preto
         try {
             const logo = await preloadLogo();
-            const logoW = 36;
-            doc.addImage(logo, 'PNG', (pageWidth - logoW)/2, y, logoW, logoW);
-            y += logoW + 10;
+            const logoW = 40;
+            doc.addImage(logo, 'PNG', (pageWidth - logoW)/2, margin, logoW, logoW);
+            y = margin + logoW + 15;
         } catch(e) {
             console.warn('Erro logo:', e);
-            y += 45;
+            y = 70;
         }
 
         // Título
-        doc.setTextColor(0, 255, 102); // Verde Zecure
-        doc.setFontSize(16);
+        doc.setTextColor(...VERDE_ZECURE);
+        doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.text('RELATÓRIO DE INSPEÇÃO', pageWidth/2, y, {align: 'center'});
         y += 20;
 
-        // Box de informações
-        doc.setFillColor(27, 42, 49); // Cinza card
-        doc.roundedRect(margin, y, pageWidth - 2*margin, 50, 3, 3, 'F');
+        // Box de informações com fundo escuro
+        doc.setFillColor(...CINZA_CARD);
+        doc.roundedRect(margin, y, pageWidth - 2*margin, 55, 3, 3, 'F');
 
-        // Informações básicas
-        doc.setTextColor(255); // Texto branco
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        
-        const infoY = y + 10;
+        // Dados do formulário
         const data = {
             tecnico: document.getElementById('nomeTecnico').value,
             equipamento: document.getElementById('equipamento').value,
@@ -252,90 +252,119 @@ async function gerarPDF() {
                 'Não disponível'
         };
 
-        doc.text(`Técnico: ${data.tecnico}`, margin + 5, infoY);
-        doc.text(`Data: ${data.data}`, margin + 5, infoY + 10);
-        doc.text(`Equipamento: ${data.equipamento}`, margin + 5, infoY + 20);
-        doc.text(`Tipo: ${data.tipo}`, margin + 5, infoY + 30);
-        doc.text(`Local: ${data.local}`, margin + 5, infoY + 40);
-        y += 60;
+        // Informações com alinhamento consistente
+        doc.setTextColor(255);
+        doc.setFontSize(11);
+        const infoY = y + 12;
+        const colX = margin + 8;
+
+        // Helper para texto com label
+        function addLabeledText(label, text, yPos) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, colX, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text(text, colX + 25, yPos);
+        }
+
+        addLabeledText('Técnico:', data.tecnico, infoY);
+        addLabeledText('Data:', data.data, infoY + 10);
+        addLabeledText('Equip:', data.equipamento, infoY + 20);
+        addLabeledText('Tipo:', data.tipo, infoY + 30);
+        addLabeledText('Local:', data.local, infoY + 40);
+
+        y += 65;
 
         // Descrição
-        doc.setTextColor(0); // Texto preto
-        doc.setFillColor(0, 255, 102, 0.1);
-        doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
+        doc.setTextColor(0);
+        doc.setFillColor(...VERDE_ZECURE, 0.1);
+        doc.roundedRect(margin, y, pageWidth - 2*margin, 12, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.text('DESCRIÇÃO DO SERVIÇO', margin + 5, y + 7);
-        y += 15;
+        doc.text('DESCRIÇÃO DO SERVIÇO', margin + 5, y + 8);
+        y += 20;
+
+        // Texto da descrição
         doc.setFont('helvetica', 'normal');
         const descLines = doc.splitTextToSize(
             document.getElementById('descricao').value, 
-            pageWidth - 2*margin
+            pageWidth - 2*margin - 6
         );
-        doc.text(descLines, margin, y);
-        y += descLines.length * 6 + 10;
+        doc.text(descLines, margin + 3, y);
+        y += descLines.length * 7 + 15;
 
-        // Função para adicionar imagens
+        // Função para adicionar imagens em grid
         async function addImages(files, title) {
             if (!files.length) return;
             
-            // Título da seção
-            doc.setFillColor(0, 255, 102, 0.1);
-            doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
-            doc.setFont('helvetica', 'bold');
-            doc.text(title, margin + 5, y + 7);
-            y += 15;
+            if (y > pageHeight - 60) {
+                doc.addPage();
+                y = margin;
+            }
 
-            // Grid de imagens
-            const imageGrid = Array.from(files).slice(0, 4);
-            for (let i = 0; i < imageGrid.length; i++) {
+            // Título da seção
+            doc.setFillColor(...VERDE_ZECURE, 0.1);
+            doc.roundedRect(margin, y, pageWidth - 2*margin, 12, 2, 2, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, margin + 5, y + 8);
+            y += 20;
+
+            const images = Array.from(files).slice(0, 4);
+            const imgW = 85;
+            const imgH = 60;
+            const colGap = 8;
+            const rowGap = 10;
+
+            for (let i = 0; i < images.length; i++) {
                 const col = i % 2;
                 const row = Math.floor(i / 2);
                 
-                if (y + (row * 70) + 60 > pageHeight - margin) {
+                if (y + (imgH + rowGap) > pageHeight - margin) {
                     doc.addPage();
                     y = margin;
                 }
 
-                const x = margin + (col * 90);
-                const imgY = y + (row * 70);
+                const x = margin + col * (imgW + colGap);
+                const imgY = y + row * (imgH + rowGap);
 
                 try {
-                    const dataUrl = await processImage(imageGrid[i]);
+                    const dataUrl = await processImage(images[i]);
                     if (dataUrl) {
                         // Borda verde
-                        doc.setDrawColor(0, 255, 102);
+                        doc.setDrawColor(...VERDE_ZECURE);
                         doc.setLineWidth(0.5);
-                        doc.rect(x-1, imgY-1, 87, 62);
-                        
-                        // Imagem
-                        doc.addImage(dataUrl, 'JPEG', x, imgY, 85, 60);
+                        doc.rect(x, imgY, imgW, imgH);
+                        doc.addImage(dataUrl, 'JPEG', x, imgY, imgW, imgH);
                     }
                 } catch(e) {
-                    console.warn('Erro imagem:', e);
+                    console.warn('Erro ao processar imagem:', e);
+                    doc.setDrawColor(...VERDE_ZECURE);
+                    doc.rect(x, imgY, imgW, imgH);
                 }
             }
-            y += Math.ceil(imageGrid.length / 2) * 70 + 10;
+
+            y += Math.ceil(images.length / 2) * (imgH + rowGap) + 10;
         }
 
-        // Adiciona as fotos
+        // Adiciona fotos
         await addImages(document.getElementById('fotoAntes').files, 'FOTOS - ANTES');
         await addImages(document.getElementById('fotoDepois').files, 'FOTOS - DEPOIS');
 
-        // Observações
+        // Observações (se houver)
         const obs = document.getElementById('compra').value.trim();
         if (obs) {
             if (y > pageHeight - 60) {
                 doc.addPage();
                 y = margin;
             }
-            doc.setFillColor(0, 255, 102, 0.1);
-            doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
+            
+            doc.setFillColor(...VERDE_ZECURE, 0.1);
+            doc.roundedRect(margin, y, pageWidth - 2*margin, 12, 2, 2, 'F');
             doc.setFont('helvetica', 'bold');
-            doc.text('OBSERVAÇÕES:', margin + 5, y + 7);
-            y += 15;
+            doc.text('OBSERVAÇÕES', margin + 5, y + 8);
+            y += 20;
+
             doc.setFont('helvetica', 'normal');
-            const obsLines = doc.splitTextToSize(obs, pageWidth - 2*margin);
-            doc.text(obsLines, margin, y);
+            const obsLines = doc.splitTextToSize(obs, pageWidth - 2*margin - 6);
+            doc.text(obsLines, margin + 3, y);
         }
 
         // Rodapé em todas as páginas
@@ -344,18 +373,17 @@ async function gerarPDF() {
             doc.setPage(i);
             
             // Linha verde
-            doc.setDrawColor(0, 255, 102);
+            doc.setDrawColor(...VERDE_ZECURE);
             doc.setLineWidth(0.5);
             doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
             
             // Nome da empresa
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
-            doc.setTextColor(0, 255, 102);
+            doc.setTextColor(...VERDE_ZECURE);
             doc.text('Zecure - Soluções em Segurança', pageWidth/2, pageHeight - 12, {align: 'center'});
             
             // Número da página
-            doc.setTextColor(100);
             doc.setFontSize(8);
             doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, pageHeight - 12);
         }
@@ -383,4 +411,3 @@ function abrirMapa(){ if(userLocation) window.open(`https://www.google.com/maps?
 
 </body>
 </html>
-
