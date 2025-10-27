@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zecure Inspeções - Painel Técnico</title>
+<link rel="preload" href="zecurelogo.png" as="image">
+
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+:root {
+  --verde-zecure: #00ff66;
+  --fundo-escuro: #0e1a1f;
+  --cinza-card: #1b2a31;
+  --cinza-claro: #223138;
+  --texto: #ffffff;
+  --borda: #1f3a40;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', Roboto, sans-serif;}
+body{background: var(--fundo-escuro); color: var(--texto); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;}
+.container, .painel{width: 100%; max-width: 500px; background: var(--cinza-card); padding: 25px; border-radius: 12px; box-shadow: 0 0 25px rgba(0,0,0,0.5); text-align: center; transition: all 0.3s ease;}
+h2{text-align:center;color: var(--verde-zecure); margin-bottom:15px;font-size:1.8rem;}
+input, select, textarea, button{width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border:none; background: var(--cinza-claro); color: var(--texto); font-size: 0.95rem;}
+textarea{resize: vertical; min-height: 100px;}
+label{display:block; margin-top:10px; color: var(--verde-zecure); font-weight: bold; text-align:left;}
+button{background: var(--verde-zecure); color: #000; padding: 12px; margin-top: 20px; width: 100%; border:none; border-radius:6px; cursor:pointer; transition:0.3s;}
+button:hover{background: #00e05a;}
+.photo-list{display: flex; flex-wrap: wrap; gap: 5px; margin-top:5px; justify-content:center;}
+.photo-list img{width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--borda);}
+.hidden{display:none;}
+.logo-login{width:150px; margin-bottom:15px;}
+.header-panel {display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+.btn-sair {width: auto; padding: 8px 15px; margin: 0; background: #ff4444;}
+.btn-sair:hover {background: #ff2222;}
+.localizacao-container {margin: 10px 0;}
+.coords-box {display: flex; gap: 10px; align-items: center;}
+.btn-mapa {width: auto; padding: 5px 10px; margin: 0; font-size: 0.9rem;}
+#coordenadas {background: var(--cinza-claro); padding: 8px; border-radius: 4px; flex: 1;}
+@media(max-width:720px){input, select, textarea, button{font-size:0.9rem;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="container">
+  <img src="zecurelogo.png" alt="Logo Zecure" class="logo-login">
+  <h2>Acesso Técnico</h2>
+  <input type="text" id="usuario" placeholder="Usuário">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- PAINEL DE INSPEÇÃO -->
+<div id="painel" class="painel hidden">
+  <div class="header-panel">
+    <h2>Ficha de Inspeção</h2>
+    <button onclick="sair()" class="btn-sair">Sair</button>
+  </div>
+
+  <label>Nome do Técnico</label>
+  <input type="text" id="nomeTecnico" placeholder="Nome do técnico responsável" readonly>
+
+  <label>Data e Hora</label>
+  <input type="text" id="dataHora" readonly>
+
+  <label>Equipamento</label>
+  <input type="text" id="equipamento" placeholder="Ex: Bomba de recalque, gerador...">
+
+  <label>Tipo de Inspeção</label>
+  <select id="tipo">
+    <option value="Preventiva">Preventiva</option>
+    <option value="Corretiva">Corretiva</option>
+  </select>
+
+  <label>Fotos Antes</label>
+  <input type="file" id="fotoAntes" multiple accept="image/*" onchange="previewPhotos('fotoAntes','previewAntes')">
+  <div id="previewAntes" class="photo-list"></div>
+
+  <label>Descrição do Serviço / Ocorrência</label>
+  <textarea id="descricao"></textarea>
+
+  <label>Fotos Depois</label>
+  <input type="file" id="fotoDepois" multiple accept="image/*" onchange="previewPhotos('fotoDepois','previewDepois')">
+  <div id="previewDepois" class="photo-list"></div>
+
+  <label>Observações / Necessidade de Compra</label>
+  <textarea id="compra"></textarea>
+
+  <button onclick="verificarEGerarPDF()">Gerar PDF</button>
+
+  <div class="localizacao-container">
+    <label>Localização Atual</label>
+    <div class="coords-box">
+      <span id="coordenadas">Aguardando...</span>
+      <button onclick="abrirMapa()" class="btn-mapa">Ver no Mapa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.jsPDF = window.jspdf.jsPDF;
+
+const USERS = { 'Marcos':'Vila2025','Haniel':'Vila2025','Daniel':'Vila2025','Josue':'Vila2025' };
+let userLocation = null;
+
+// ===== LOGIN =====
+function login() {
+    const user = document.getElementById('usuario').value.trim();
+    const pass = document.getElementById('senha').value.trim();
+    if(USERS[user] && USERS[user]===pass){
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('painel').classList.remove('hidden');
+        document.getElementById('dataHora').value = new Date().toLocaleString('pt-BR');
+        document.getElementById('nomeTecnico').value = user;
+        getLocation();
+    } else { alert('Usuário ou senha incorretos.'); }
+}
+
+// ===== LOCALIZAÇÃO =====
+function getLocation(){
+    if("geolocation" in navigator){
+        navigator.geolocation.getCurrentPosition(pos=>{
+            userLocation={latitude:pos.coords.latitude, longitude:pos.coords.longitude};
+            document.getElementById('coordenadas').textContent = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+        }, err=>{
+            console.error(err);
+            document.getElementById('coordenadas').textContent = 'Localização indisponível';
+        });
+    }
+}
+
+// ===== PREVIEW FOTOS =====
+function previewPhotos(inputId, containerId){
+    const input=document.getElementById(inputId);
+    const container=document.getElementById(containerId);
+    container.innerHTML='';
+    [...input.files].forEach(file=>{
+        const img=document.createElement('img');
+        img.src=URL.createObjectURL(file);
+        container.appendChild(img);
+    });
+}
+
+// ===== PRELOAD LOGO =====
+async function preloadLogo(){
+    return new Promise((resolve,reject)=>{
+        const img=new Image();
+        img.onload=()=>resolve(canvasToDataURL(img));
+        img.onerror=reject;
+        img.src='zecurelogo.png';
+    });
+}
+function canvasToDataURL(img){
+    const canvas=document.createElement('canvas');
+    canvas.width=img.width; canvas.height=img.height;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    return canvas.toDataURL('image/png');
+}
+
+// ===== READ FILE TO DATAURL =====
+function readFileToDataURL(file, timeoutMs=7000){
+    return new Promise(resolve=>{
+        const reader=new FileReader();
+        let done=false;
+        const t=setTimeout(()=>{ if(!done){ done=true; resolve(null); } }, timeoutMs);
+        reader.onerror=()=>{ if(!done){ done=true; clearTimeout(t); resolve(null); }};
+        reader.onload=(e)=>{ if(!done){ done=true; clearTimeout(t); resolve(e.target.result); }};
+        reader.readAsDataURL(file);
+    });
+}
+
+// Função para processar imagem de forma otimizada
+async function processImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        const timeout = setTimeout(() => resolve(null), 5000);
+        
+        reader.onload = (e) => {
+            clearTimeout(timeout);
+            resolve(e.target.result);
+        };
+        
+        reader.onerror = () => {
+            clearTimeout(timeout);
+            resolve(null);
+        };
+        
+        reader.readAsDataURL(file);
+    });
+}
+
+// Função principal de geração do PDF
+async function gerarPDF() {
+    try {
+        // Validação dos campos obrigatórios
+        const campos = {
+            nomeTecnico: document.getElementById('nomeTecnico').value.trim(),
+            equipamento: document.getElementById('equipamento').value.trim(),
+            descricao: document.getElementById('descricao').value.trim()
+        };
+
+        if (!campos.nomeTecnico || !campos.equipamento || !campos.descricao) {
+            alert('Preencha todos os campos obrigatórios: Nome, Equipamento e Descrição');
+            return;
+        }
+
+        // Criação do documento
+        const doc = new jspdf.jsPDF();
+        const margin = 15;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.height;
+        let y = margin;
+
+        // Adiciona logo
+        try {
+            const logo = await preloadLogo();
+            const logoW = 40;
+            doc.addImage(logo, 'PNG', (pageWidth - logoW)/2, y, logoW, logoW);
+            y += logoW + 10;
+        } catch(e) {
+            console.warn('Erro ao carregar logo:', e);
+            y += 10;
+        }
+
+        // Cabeçalho estilizado
+        doc.setFillColor(14, 26, 31); // --fundo-escuro
+        doc.rect(0, 0, pageWidth, 20, 'F');
+        
+        // Título
+        doc.setTextColor(0, 255, 102); // --verde-zecure
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RELATÓRIO DE INSPEÇÃO', pageWidth/2, y, {align: 'center'});
+        y += 15;
+
+        // Reset cor do texto
+        doc.setTextColor(0);
+
+        // Box de informações
+        doc.setFillColor(27, 42, 49); // --cinza-card
+        doc.roundedRect(margin, y, pageWidth - 2*margin, 50, 3, 3, 'F');
+        
+        // Informações básicas
+        doc.setTextColor(255); // texto branco
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        
+        const infoY = y + 10;
+        doc.text(`Técnico: ${campos.nomeTecnico}`, margin + 5, infoY);
+        doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, margin + 5, infoY + 10);
+        doc.text(`Equipamento: ${campos.equipamento}`, margin + 5, infoY + 20);
+        doc.text(`Tipo: ${document.getElementById('tipo').value}`, margin + 5, infoY + 30);
+        
+        // Adiciona localização
+        if (userLocation) {
+            doc.text(`Localização: ${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}`, 
+                margin + 5, infoY + 40);
+        }
+        
+        y += 60;
+
+        // Reset cor do texto
+        doc.setTextColor(0);
+
+        // Descrição
+        doc.setFillColor(0, 255, 102, 0.1); // Verde semi-transparente
+        doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.text('DESCRIÇÃO DO SERVIÇO', margin + 5, y + 7);
+        y += 15;
+        doc.setFont('helvetica', 'normal');
+        const descLines = doc.splitTextToSize(campos.descricao, pageWidth - 2*margin);
+        doc.text(descLines, margin, y);
+        y += descLines.length * 6 + 10;
+
+        // Função auxiliar para adicionar imagens
+        async function addImages(files, title) {
+            if (!files.length) return;
+            
+            doc.setFillColor(0, 255, 102, 0.1);
+            doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, margin + 5, y + 7);
+            y += 15;
+
+            const imagePromises = Array.from(files)
+                .slice(0, 4)
+                .map(async (file, index) => {
+                    try {
+                        const dataUrl = await processImage(file);
+                        if (!dataUrl) return;
+
+                        const x = margin + (index % 2) * 90;
+                        const imgY = y + Math.floor(index / 2) * 70;
+
+                        // Borda verde nas imagens
+                        doc.setDrawColor(0, 255, 102);
+                        doc.setLineWidth(0.5);
+                        doc.rect(x-1, imgY-1, 87, 62);
+
+                        doc.addImage(dataUrl, 'JPEG', x, imgY, 85, 60);
+                    } catch (e) {
+                        console.warn('Erro ao processar imagem:', e);
+                    }
+                });
+
+            await Promise.all(imagePromises);
+            y += Math.ceil(files.length / 2) * 70 + 10;
+        }
+
+        await addImages(document.getElementById('fotoAntes').files, 'FOTOS - ANTES');
+        await addImages(document.getElementById('fotoDepois').files, 'FOTOS - DEPOIS');
+
+        // Observações
+        const observacoes = document.getElementById('compra').value.trim();
+        if (observacoes) {
+            if (y > pageHeight - 60) {
+                doc.addPage();
+                y = margin;
+            }
+            doc.setFillColor(0, 255, 102, 0.1);
+            doc.roundedRect(margin, y, pageWidth - 2*margin, 10, 2, 2, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text('OBSERVAÇÕES:', margin + 5, y + 7);
+            y += 15;
+            doc.setFont('helvetica', 'normal');
+            const obsLines = doc.splitTextToSize(observacoes, pageWidth - 2*margin);
+            doc.text(obsLines, margin, y);
+        }
+
+        // Rodapé em todas as páginas
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            
+            // Linha verde
+            doc.setDrawColor(0, 255, 102);
+            doc.setLineWidth(0.5);
+            doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+            
+            // Nome da empresa
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(0, 255, 102);
+            doc.text('Zecure - Soluções em Segurança', pageWidth/2, pageHeight - 12, {align: 'center'});
+            
+            // Número da página
+            doc.setTextColor(100);
+            doc.setFontSize(8);
+            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, pageHeight - 12);
+        }
+
+        // Salva o PDF
+        const filename = `Inspecao_${campos.nomeTecnico.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+        doc.save(filename);
+
+    } catch (err) {
+        console.error('Erro ao gerar PDF:', err);
+        alert('Erro ao gerar PDF. Por favor, tente novamente.');
+    }
+}
+
+// Função de verificação e geração
+function verificarEGerarPDF() {
+    gerarPDF().catch(err => {
+        console.error('Erro:', err);
+        alert('Ocorreu um erro ao gerar o PDF. Tente novamente.');
+    });
+}
+
+function sair(){ document.getElementById('painel').classList.add('hidden'); document.getElementById('login').classList.remove('hidden'); }
+function abrirMapa(){ if(userLocation) window.open(`https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}`,'_blank'); else alert('Localização não disponível'); }
+</script>
+
+</body>
+</html>
