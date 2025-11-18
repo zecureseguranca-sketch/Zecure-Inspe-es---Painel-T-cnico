@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>Zecure Pro App</title>
 
-<!-- jsPDF funcionando -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-
 :root {
   --green: #00ff88;
   --bg: #0c1114;
@@ -19,10 +17,8 @@
   --dim: #8ea8b1;
 }
 
-/* ========================= GLOBAL ========================= */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI';}
 body{background:var(--bg);color:var(--text);display:flex;justify-content:center;}
-
 .app{width:100%;max-width:480px;height:100vh;position:relative;}
 
 .screen{
@@ -36,7 +32,7 @@ body{background:var(--bg);color:var(--text);display:flex;justify-content:center;
   color:var(--green);
 }
 
-/* ========================= FOTO PERFIL ========================= */
+/* FOTO PERFIL */
 #fotoPerfilPreview {
   width:140px;
   height:140px;
@@ -47,7 +43,7 @@ body{background:var(--bg);color:var(--text);display:flex;justify-content:center;
   margin-bottom:15px;
 }
 
-/* ========================= INPUTS ========================= */
+/* INPUTS */
 label{display:block;margin-top:15px;font-weight:bold;color:var(--green);}
 input,select,textarea{
   width:100%;padding:14px;margin-top:5px;border:none;
@@ -56,14 +52,14 @@ input,select,textarea{
 }
 textarea{min-height:90px;}
 
-/* ========================= BOTÕES ========================= */
+/* BOTÕES */
 button{
   width:100%;padding:15px;margin-top:20px;border:none;border-radius:10px;
   background:var(--green);font-weight:bold;color:#002e17;font-size:1.05rem;
 }
 button:active{transform:scale(.97);}
 
-/* ========================= ORIENTAÇÃO ========================= */
+/* ORIENTAÇÃO */
 .orientacao-box{
   background:var(--card);
   border-left:4px solid var(--green);
@@ -71,108 +67,59 @@ button:active{transform:scale(.97);}
   border-radius:12px;
   margin-bottom:22px;
 }
-.orientacao-box h3{
-  margin-bottom:8px;
-  color:var(--green);
-  font-size:1.3rem;
-}
-.orientacao-box .sub{
-  color:var(--dim);
-  margin-bottom:14px;
-  font-size:.9rem;
-}
-
-.audio-btn{
-  background:#0099ff;
-  color:#fff;
-  padding:10px;
-  width:100%;
-  border-radius:10px;
-  border:none;
-  font-weight:bold;
-  margin-bottom:15px;
-}
-
-/* CHECKLIST */
 .checklist-box{margin-top:10px;}
 .check-item{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  background:var(--input);
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:8px;
-  color:var(--text);
+  display:flex;align-items:center;gap:10px;background:var(--input);
+  padding:10px;border-radius:10px;margin-bottom:8px;color:var(--text);
 }
-.check-item input{
-  width:18px;
-  height:18px;
+.check-item input{width:18px;height:18px;}
+
+.audio-btn{
+  background:#0099ff;color:#fff;padding:10px;width:100%;
+  border-radius:10px;border:none;font-weight:bold;margin-bottom:15px;
 }
 
-/* ========================= LISTA AVANÇADA ========================= */
-.search-box {
-  background:#1e2a31;
-  border:2px solid var(--green);
-  padding:12px;
-  border-radius:10px;
-  width:100%;
-  color:#fff;
-  margin-bottom:10px;
-  font-size:1rem;
+/* LISTA AVANÇADA */
+.search-box{
+  background:#1e2a31;border:2px solid var(--green);
+  padding:12px;border-radius:10px;width:100%;color:#fff;
+  margin-bottom:10px;font-size:1rem;
+}
+select.advanced-select{
+  background:#1f2d33;border:2px solid var(--green);
+  color:#fff;font-size:1rem;padding:14px;border-radius:12px;
 }
 
-select.advanced-select {
-  background:#1f2d33;
-  border:2px solid var(--green);
-  color:#fff;
-  font-size:1rem;
-  padding:14px;
-  border-radius:12px;
-  appearance:none;
-}
-
-/* ========================= GRID FOTOS ========================= */
+/* FOTOS */
 .photo-grid{
   display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;
 }
 .photo-grid img{
-  width:95px;height:95px;object-fit:cover;border-radius:10px;
-  border:1px solid #000;
+  width:95px;height:95px;object-fit:cover;border-radius:10px;border:1px solid #000;
 }
 
-/* ========================= ASSINATURA ========================= */
+/* ASSINATURA */
 #signBox{
-  width:100%;height:140px;background:#fff;border-radius:10px;
-  margin-top:10px;touch-action:none;
+  width:100%;height:150px;background:#fff;border-radius:10px;margin-top:10px;
+  touch-action:none;
+  border:2px solid #333;
 }
 
-/* ========================= TABS ========================= */
+/* TABS */
 .tabs{
   position:absolute;bottom:0;left:0;width:100%;height:70px;background:#0d161a;
   border-top:1px solid #203035;display:flex;
 }
 .tab{
-  flex:1;text-align:center;padding-top:10px;color:var(--dim);
-  font-size:.9rem;
+  flex:1;text-align:center;padding-top:10px;color:var(--dim);font-size:.9rem;
 }
-.tab i{
-  font-size:1.7rem;display:block;margin-bottom:4px;
-}
+.tab i{font-size:1.7rem;display:block;margin-bottom:4px;}
 .active{color:var(--green);}
-
-.gps-box{
-  background:var(--input);padding:12px;border-radius:10px;margin-top:12px;
-}
 
 /* HISTÓRICO */
 #listaHist div{
-  padding:10px;
-  background:var(--input);
-  border-radius:10px;
-  margin-bottom:8px;
+  padding:10px;background:var(--input);border-radius:10px;margin-bottom:8px;
 }
-
 </style>
 </head>
 <body>
@@ -181,8 +128,6 @@ select.advanced-select {
 
 <!-- LOGIN -->
 <div id="login" class="screen show">
-
-  <!-- LOGO NO LOGIN -->
   <div style="text-align:center;margin-bottom:20px;">
       <img src="zecurelogo.png" style="width:150px; max-width:60%; filter:drop-shadow(0 0 10px #00ff88);">
   </div>
@@ -203,30 +148,27 @@ select.advanced-select {
 
   <h1 class="header">Inspeção</h1>
 
-  <!-- ORIENTAÇÃO COMPLETA -->
   <div class="orientacao-box">
     <h3>Orientações ao Técnico</h3>
-    <p class="sub">Ouça a orientação completa ou siga o checklist abaixo.</p>
+    <p class="sub">Ouça a orientação completa ou siga o checklist.</p>
 
     <button type="button" class="audio-btn" onclick="tocarAudio()">🔊 Ouvir instruções</button>
 
     <audio id="audioOrientacao">
-      <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAA" type="audio/mp3">
+      <source src="data:audio/mp3;base64,//uQZAAAAAA" type="audio/mp3">
     </audio>
 
     <div class="checklist-box">
-
       <label class="check-item"><input type="checkbox"> Checar cabeamentos</label>
       <label class="check-item"><input type="checkbox"> Limpar equipamento</label>
       <label class="check-item"><input type="checkbox"> Verificar insetos</label>
-      <label class="check-item"><input type="checkbox"> Conferir alimentação / fonte</label>
-      <label class="check-item"><input type="checkbox"> Testar comunicação (Facial / LPR)</label>
-      <label class="check-item"><input type="checkbox"> Validar abertura de porta</label>
-      <label class="check-item"><input type="checkbox"> Confirmar imagem da câmera</label>
-      <label class="check-item"><input type="checkbox"> Fotografar ANTES</label>
-      <label class="check-item"><input type="checkbox"> Fotografar DEPOIS</label>
-      <label class="check-item"><input type="checkbox"> Registrar descrição clara</label>
-
+      <label class="check-item"><input type="checkbox"> Conferir fonte</label>
+      <label class="check-item"><input type="checkbox"> Testar comunicação</label>
+      <label class="check-item"><input type="checkbox"> Validar abertura</label>
+      <label class="check-item"><input type="checkbox"> Confirmar imagem</label>
+      <label class="check-item"><input type="checkbox"> Fotos ANTES</label>
+      <label class="check-item"><input type="checkbox"> Fotos DEPOIS</label>
+      <label class="check-item"><input type="checkbox"> Registrar descrição</label>
     </div>
   </div>
 
@@ -240,9 +182,7 @@ select.advanced-select {
 
   <label>Equipamento</label>
   <select id="equip" class="advanced-select">
-
-    <option value="">Selecione o equipamento...</option>
-
+    <option value="">Selecione...</option>
     <optgroup label="Portaria P1">
       <option>Leitor Facial - Entrada Visitantes (P1)</option>
       <option>Leitor Facial - Entrada Moradores (P1)</option>
@@ -250,27 +190,23 @@ select.advanced-select {
       <option>Câmera LPR - Entrada (P1)</option>
       <option>Câmera LPR - Saída (P1)</option>
     </optgroup>
-
     <optgroup label="Portaria P2">
       <option>Leitor Facial - Entrada (P2)</option>
       <option>Leitor Facial - Saída (P2)</option>
       <option>Câmera LPR - Entrada (P2)</option>
       <option>Câmera LPR - Saída (P2)</option>
     </optgroup>
-
     <optgroup label="Portaria P3">
       <option>Leitor Facial - Entrada/Saída (Único) (P3)</option>
       <option>Câmera LPR - Entrada (P3)</option>
       <option>Câmera LPR - Saída (P3)</option>
     </optgroup>
-
     <optgroup label="Portaria P4">
       <option>Leitor Facial - Entrada (P4)</option>
       <option>Leitor Facial - Saída (P4)</option>
       <option>Câmera LPR - Entrada (P4)</option>
       <option>Câmera LPR - Saída (P4)</option>
     </optgroup>
-
   </select>
 
   <label>Fotos Antes</label>
@@ -320,7 +256,6 @@ select.advanced-select {
 <!-- HISTÓRICO -->
 <div id="historico" class="screen">
   <h1 class="header">Histórico</h1>
-
   <div id="listaHist"></div>
 </div>
 
@@ -331,42 +266,59 @@ select.advanced-select {
   <div class="tab" onclick="go('perfil', this)"><i>👤</i>Perfil</div>
 </div>
 
-</div>
+</div> <!-- app -->
 
 <script>
 window.jsPDF = window.jspdf.jsPDF;
 
-/* ===================== FOTO DO PERFIL ===================== */
-function salvarFotoPerfil(){
-  const file = document.getElementById("fotoPerfilInput").files[0];
-  if (!file) return;
+/* ======== FOTO EM CÍRCULO PARA PDF ======== */
+async function criarFotoCircular(base64) {
+    return new Promise(resolve => {
+        let img = new Image();
+        img.onload = function() {
+            let size = 80;
+            let canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
 
-  const reader = new FileReader();
-  reader.onload = function(e){
+            let ctx = canvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.drawImage(img, 0, 0, size, size);
+
+            resolve(canvas.toDataURL("image/png"));
+        };
+        img.src = base64;
+    });
+}
+
+/* ======== FOTO PERFIL ======== */
+function salvarFotoPerfil(){
+  let file = fotoPerfilInput.files[0];
+  if(!file) return;
+
+  let reader = new FileReader();
+  reader.onload = e=>{
     localStorage.setItem("ZECURE_FOTO_PERFIL", e.target.result);
-    document.getElementById("fotoPerfilPreview").src = e.target.result;
+    fotoPerfilPreview.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
-
 function carregarFotoPerfil(){
   let foto = localStorage.getItem("ZECURE_FOTO_PERFIL");
-  if(foto){
-    document.getElementById("fotoPerfilPreview").src = foto;
-  }
+  if(foto) fotoPerfilPreview.src = foto;
 }
 
-/* LOGIN */
-const USERS = {
-  Marcos:"Vila2025",
-  Haniel:"Vila2025",
-  Daniel:"Vila2025",
-  Josue:"Vila2025"
-};
+/* ===== LOGIN ===== */
+const USERS = {Marcos:"Vila2025",Haniel:"Vila2025",Daniel:"Vila2025",Josue:"Vila2025"};
 
 function login(){
   if(USERS[user.value] !== pass.value){
-    alert("Usuário ou senha incorretos");
+    alert("Usuário inválido");
     return;
   }
 
@@ -381,8 +333,8 @@ function login(){
   loadHist();
 }
 
-/* TELA */
-function go(screen, el){
+/* ===== TROCA DE TELA ===== */
+function go(screen,el){
   show(screen);
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -392,28 +344,23 @@ function show(id){
   document.getElementById(id).classList.add('show');
 }
 
-/* ORIENTAÇÃO ÁUDIO */
-function tocarAudio(){
-  document.getElementById("audioOrientacao").play();
-}
+/* ===== ÁUDIO ===== */
+function tocarAudio(){ audioOrientacao.play(); }
 
-/* BUSCA inteligente */
+/* ===== BUSCA ===== */
 function filtrarEquipamentos(){
-  let filtro = buscaEquip.value.toLowerCase();
-  let options = equip.querySelectorAll("option");
-
-  options.forEach(opt=>{
-    if(!opt.value) return;
-    let texto = opt.textContent.toLowerCase();
-    opt.style.display = texto.includes(filtro) ? "block" : "none";
+  let f = buscaEquip.value.toLowerCase();
+  equip.querySelectorAll("option").forEach(o=>{
+    if(!o.value) return;
+    o.style.display = o.textContent.toLowerCase().includes(f) ? "block":"none";
   });
 }
 
-/* GPS */
-let gpsData = null;
+/* ===== GPS ===== */
+let gpsData=null;
 function getGPS(){
   navigator.geolocation.getCurrentPosition(p=>{
-    gpsData = p.coords;
+    gpsData=p.coords;
     gps.innerText = gpsData.latitude.toFixed(6)+", "+gpsData.longitude.toFixed(6);
   });
 }
@@ -422,99 +369,140 @@ function openMap(){
   window.open(`https://maps.google.com?q=${gpsData.latitude},${gpsData.longitude}`);
 }
 
-/* PREVIEW */
-function preview(input, target){
-  const box = document.getElementById(target);
-  box.innerHTML = "";
+/* ===== FOTOS PREVIEW ===== */
+function preview(input,target){
+  let box=document.getElementById(target);
+  box.innerHTML="";
   [...document.getElementById(input).files].forEach(f=>{
-    let img = document.createElement("img");
-    img.src = URL.createObjectURL(f);
+    let img=document.createElement("img");
+    img.src=URL.createObjectURL(f);
     box.appendChild(img);
   });
 }
 
-/* ASSINATURA */
-const canvas = document.getElementById("signBox");
-const ctx = canvas.getContext("2d");
-let down = false;
+/* ======== ASSINATURA UNIVERSAL ======== */
 
-canvas.addEventListener("touchstart", e=>{
-  down = true;
-  ctx.moveTo(e.touches[0].clientX - canvas.offsetLeft, e.touches[0].clientY - canvas.offsetTop);
-});
-canvas.addEventListener("touchmove", e=>{
-  if(!down) return;
-  ctx.lineTo(e.touches[0].clientX - canvas.offsetLeft, e.touches[0].clientY - canvas.offsetTop);
-  ctx.stroke();
-});
-canvas.addEventListener("touchend", ()=> down=false);
+const sign = document.getElementById("signBox");
+const ctxSign = sign.getContext("2d");
 
-/* BASE64 */
-function fileToB64(file){
-  return new Promise(res=>{
-    let r = new FileReader();
-    r.onload = e=>res(e.target.result);
-    r.readAsDataURL(file);
-  });
+function ajustarCanvas(){
+    sign.width = sign.offsetWidth;
+    sign.height = sign.offsetHeight;
+}
+ajustarCanvas();
+window.addEventListener("resize", ajustarCanvas);
+
+let desenhando = false;
+
+function pos(e){
+    const rect = sign.getBoundingClientRect();
+    if(e.touches){
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
 }
 
-/* HISTÓRICO */
+function iniciar(e){
+    desenhando = true;
+    const p = pos(e);
+    ctxSign.beginPath();
+    ctxSign.moveTo(p.x,p.y);
+    e.preventDefault();
+}
+function mover(e){
+    if(!desenhando) return;
+    const p = pos(e);
+    ctxSign.lineTo(p.x,p.y);
+    ctxSign.strokeStyle = "#000"; // PRETO 3PX
+    ctxSign.lineWidth = 3;
+    ctxSign.lineCap = "round";
+    ctxSign.lineJoin = "round";
+    ctxSign.stroke();
+    e.preventDefault();
+}
+function parar(){ desenhando=false; ctxSign.closePath(); }
+
+sign.addEventListener("pointerdown", iniciar);
+sign.addEventListener("pointermove", mover);
+sign.addEventListener("pointerup", parar);
+
+sign.addEventListener("mousedown", iniciar);
+sign.addEventListener("mousemove", mover);
+sign.addEventListener("mouseup", parar);
+
+sign.addEventListener("touchstart", iniciar);
+sign.addEventListener("touchmove", mover);
+sign.addEventListener("touchend", parar);
+
+/* ===== HISTÓRICO ===== */
 
 function saveHist(nome){
   h.unshift({nome,data:new Date().toLocaleString("pt-BR")});
-  localStorage.setItem("ZECURE_HIST", JSON.stringify(h));
+  localStorage.setItem("ZECURE_HIST",JSON.stringify(h));
   loadHist();
 }
 function loadHist(){
   listaHist.innerHTML = h.length ?
-    h.map(i=>`<div>📄 ${i.nome} <small>${i.data}</small></div>`).join("") :
-    "Nenhum relatório gerado ainda.";
+    h.map(i=>`<div>📄 ${i.nome}<br><small>${i.data}</small></div>`).join("") :
+    "Nenhum relatório gerado.";
 }
 
-/* PDF */
+/* ======== GERAR PDF ======== */
 async function gerarPDF(){
-
   let doc = new jsPDF();
   let y = 20;
 
-  /* LOGO NO PDF */
-  let logo = "zecurelogo.png";
-  doc.addImage(logo, "PNG", 80, 5, 50, 20);
+  /* LOGO ESQUERDA */
+  doc.addImage("zecurelogo.png","PNG",10,8,35,16);
 
-  /* FOTO PERFIL (if exists) */
-  let fotoPerfil = localStorage.getItem("ZECURE_FOTO_PERFIL");
-  if (fotoPerfil){
-      doc.addImage(fotoPerfil, "PNG", 15, 5, 25, 25);
-  }
+  /* FOTO PERFIL REDONDA (se existir) */
+  let foto = localStorage.getItem("ZECURE_FOTO_PERFIL");
+  let fotoCircular = null;
+  if(foto) fotoCircular = await criarFotoCircular(foto);
 
+  /* TÍTULO CENTRAL */
   doc.setFont("helvetica","bold");
   doc.setFontSize(18);
-  doc.text("Relatório de Inspeção - Zecure",105,y,{align:'center'});
-  y+=20;
+  doc.text("Relatório de Inspeção - Zecure", 105, 30, {align:'center'});
+
+  /* FOTO DO TÉCNICO POSICIONADA À DIREITA, ABAIXO DO TÍTULO */
+  if(fotoCircular){
+      doc.addImage(fotoCircular,"PNG",160,40,25,25);
+  }
+
+  y = 50;
 
   doc.setFontSize(12);
-  doc.text("Técnico: "+tec.value,15,y);y+=7;
-  doc.text("Data: "+data.value,15,y);y+=7;
-  doc.text("Equipamento: "+equip.value,15,y);y+=7;
-  doc.text("GPS: "+gps.innerText,15,y);y+=14;
+  doc.text("Técnico: "+tec.value,15,y); y+=7;
+  doc.text("Data: "+data.value,15,y); y+=7;
+  doc.text("Equipamento: "+equip.value,15,y); y+=7;
+  doc.text("GPS: "+gps.innerText,15,y); y+=14;
 
-  doc.text("Descrição:",15,y);y+=7;
+  doc.text("Descrição:",15,y); y+=7;
   let lines = doc.splitTextToSize(desc.value,180);
   doc.text(lines,15,y);
-  y+=lines.length*5+14;
+  y += lines.length*5 + 14;
 
+  /* FOTOS */
   async function addFotos(label,id){
-    let f = document.getElementById(id).files;
-    if(!f.length) return;
-    doc.addPage();
-    y=15;
-    doc.text(label,15,y);y+=12;
+    let files = document.getElementById(id).files;
+    if(!files.length) return;
 
-    for(let i of f){
-      let img = await fileToB64(i);
-      doc.addImage(img,"JPEG",15,y,80,60);
-      y+=65;
-      if(y>260){doc.addPage();y=15;}
+    doc.addPage();
+    let y2=15;
+    doc.text(label,15,y2); y2+=12;
+
+    for(let f of files){
+      let base = await fileToB64(f);
+      doc.addImage(base,"JPEG",15,y2,80,60);
+      y2+=65;
+      if(y2>260){ doc.addPage(); y2=15; }
     }
   }
 
@@ -522,19 +510,19 @@ async function gerarPDF(){
   await addFotos("Fotos Depois","depois");
 
   if(obs.value.trim()){
-    doc.addPage();y=15;
-    doc.text("Observações:",15,y);y+=12;
-    let t = doc.splitTextToSize(obs.value,180);
-    doc.text(t,15,y);
+    doc.addPage();
+    let y3=15;
+    doc.text("Observações:",15,y3); y3+=12;
+    let obsTxt = doc.splitTextToSize(obs.value,180);
+    doc.text(obsTxt,15,y3);
   }
 
   doc.addPage();
   doc.text("Assinatura:",15,20);
-  doc.addImage(canvas.toDataURL(),"PNG",15,30,100,60);
+  doc.addImage(sign.toDataURL(),"PNG",15,30,100,60);
 
-  const name = `Inspecao_${tec.value}_${Date.now()}.pdf`;
+  let name = `Inspecao_${tec.value}_${Date.now()}.pdf`;
   doc.save(name);
-
   saveHist(name);
 }
 
